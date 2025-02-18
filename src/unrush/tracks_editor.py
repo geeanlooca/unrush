@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from tracks_info import Trackinfo, extract_tracks_information
+from unrush.tracks_info import Trackinfo, extract_tracks_information
 from typing import Optional
-import subprocess
 
 
 class MkvTracksEditor:
-
     _exec_name = "mkvpropedit"
 
-    def __init__(self, mkv_file: str, tracks_info: Optional[list[Trackinfo]] = None) -> None:
+    def __init__(
+        self, mkv_file: str, tracks_info: Optional[list[Trackinfo]] = None
+    ) -> None:
         self.mkv_file = mkv_file
         self._audio_preference = []
         self._subs_preference = []
@@ -22,11 +22,8 @@ class MkvTracksEditor:
     def set_audio_preferences(self, languages: list[str]) -> MkvTracksEditor:
         return self
 
-
     def set_subtitle_preferences(self, languages: list[str]) -> MkvTracksEditor:
         return self
-
-
 
     def _build_track_args(self, track: Trackinfo, default: bool) -> list[str]:
         args = []
@@ -41,9 +38,11 @@ class MkvTracksEditor:
     def _build_subs_args(self) -> list[str]:
         return self._build_args(self._subs_preference, "subtitles")
 
-    def _build_args(self, language_preferences: list[str], track_type: str) -> list[str]:
+    def _build_args(
+        self, language_preferences: list[str], track_type: str
+    ) -> list[str]:
         tracks = [track for track in self.tracks if track.track_type == track_type]
-        available_languages = {track.language:track for track in tracks}
+        available_languages = {track.language: track for track in tracks}
         selected_track = tracks[0]
 
         args = []
@@ -57,10 +56,8 @@ class MkvTracksEditor:
             args.extend(self._build_track_args(track, track == selected_track))
 
         return args
-        
-    
-    def apply(self) -> None:
 
+    def apply(self) -> None:
         args = []
         args.append(self._exec_name)
         args.append(self.mkv_file)
@@ -74,10 +71,3 @@ class MkvTracksEditor:
         print(args)
 
         # subprocess.call(args)
-
-
-    
-
-
-
-

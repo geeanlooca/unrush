@@ -15,8 +15,9 @@ def remove_year(title: str) -> str:
     end = title.rfind(")")
     if start == -1 or end == -1:
         return title
-    
+
     return title[:start].strip()
+
 
 def tmdb_search(title: str, api_key: str) -> dict:
     title = remove_year(title)
@@ -56,10 +57,3 @@ if __name__ == "__main__":
                 print(f"No results found for {movie.title}")
             else:
                 pprint(response)
-
-
-            
-
-
-
-

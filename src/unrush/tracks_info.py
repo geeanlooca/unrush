@@ -1,9 +1,6 @@
 import json
-from pprint import pprint
 import subprocess
 from dataclasses import dataclass
-
-
 
 
 @dataclass
@@ -15,6 +12,7 @@ class Trackinfo:
     default_track: bool = False
     forced_display: bool = False
 
+
 @dataclass
 class MKVInfo:
     title: str
@@ -24,8 +22,9 @@ class MKVInfo:
         return [track.language for track in self.tracks if track.track_type == "audio"]
 
     def subtitle_languages(self) -> list[str]:
-        return [track.language for track in self.tracks if track.track_type == "subtitles"]
-    
+        return [
+            track.language for track in self.tracks if track.track_type == "subtitles"
+        ]
 
 
 def load_movies_json(file: str) -> list[MKVInfo]:
@@ -35,7 +34,6 @@ def load_movies_json(file: str) -> list[MKVInfo]:
     movies = []
 
     for title, movie_tracks in data.items():
-
         tracks = []
         for track in movie_tracks:
             tracks.append(Trackinfo(**track))
@@ -45,10 +43,9 @@ def load_movies_json(file: str) -> list[MKVInfo]:
     return movies
 
 
-
-
-def get_prefix_width(line: str, delim: str = '+') -> int:
+def get_prefix_width(line: str, delim: str = "+") -> int:
     return len(line.split(delim)[0])
+
 
 def get_track_info(track_info_lines: list[str]) -> Trackinfo:
     def clean_line(line: str) -> str:
@@ -84,8 +81,9 @@ def get_track_info(track_info_lines: list[str]) -> Trackinfo:
             default_track = v == "1"
         elif k.startswith('"Forced display" flag'):
             forced_display = v == "1"
-        
+
     return Trackinfo(number, uid, track_type, language, default_track, forced_display)
+
 
 def extract_track_info_lines(lines: str, start: int) -> list[str]:
     line = lines[start]
@@ -109,12 +107,13 @@ def extract_track_info_lines(lines: str, start: int) -> list[str]:
 
     return track_info
 
+
 def parse_tracks(mkv_info: str) -> list[Trackinfo]:
     lines = list(map(lambda s: s.rstrip(), mkv_info.split("|")))
 
     track_starts = []
     for i, line in enumerate(lines):
-        if line.endswith('+ Track'):
+        if line.endswith("+ Track"):
             track_starts.append(i)
 
     track_info = []
@@ -126,7 +125,9 @@ def parse_tracks(mkv_info: str) -> list[Trackinfo]:
     return track_info
 
 
-def extract_tracks_information(mkv_file: str, print_full_output: bool = False) -> list[Trackinfo]:
+def extract_tracks_information(
+    mkv_file: str, print_full_output: bool = False
+) -> list[Trackinfo]:
     out = subprocess.check_output(["mkvinfo", mkv_file]).decode("utf-8")
     if print_full_output:
         print(out)
