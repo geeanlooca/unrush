@@ -1,25 +1,10 @@
-import argparse
-import dataclasses
-import json
 import os
 import subprocess
 from pprint import pprint
 
 from unrush import tracks_editor
+from unrush.cli import build_cli, parse_cli_arguments
 from unrush.tracks_info import extract_tracks_information
-
-MKV_FILE = (
-    r"/media/red1/Movies/Fallen Angels (1995)/Fallen Angels (1995) Bluray-1080p.mkv"
-)
-WRONG_FILE = "/does/not/exist.mkv"
-ARCHIVE_PATH = r"/media/red1/Movies"
-
-
-class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
 
 
 def check_exec() -> bool:
@@ -53,9 +38,8 @@ def get_mkv_files_in_path(path: str) -> list[os.DirEntry]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Extract information from mkv files")
-    parser.add_argument("path", help="Path to the mkv file or media directory")
-    args = parser.parse_args()
+    cli = build_cli()
+    args = parse_cli_arguments(cli)
 
     if not check_exec():
         print("mkvpropedit or mkvinfo not found in PATH")
