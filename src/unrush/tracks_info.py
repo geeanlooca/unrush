@@ -1,16 +1,24 @@
 import json
 import subprocess
 from dataclasses import dataclass
+from enum import StrEnum
+
+
+class TrackType(StrEnum):
+    AUDIO = "audio"
+    SUBTITLES = "subtitles"
+    VIDEO = "video"
 
 
 @dataclass
 class Trackinfo:
     number: int
     uid: str
-    track_type: str
+    track_type: TrackType
     language: str
     default_track: bool = False
     forced_display: bool = False
+    original_language: bool = False
 
 
 @dataclass
@@ -28,7 +36,7 @@ class MKVInfo:
 
 
 def load_movies_json(file: str) -> list[MKVInfo]:
-    with open(file, "r") as f:
+    with open(file) as f:
         data = json.load(f)
 
     movies = []
@@ -66,23 +74,35 @@ def get_track_info(track_info_lines: list[str]) -> Trackinfo:
     language = ""
     default_track = False
     forced_display = False
+    original_language = False
 
-    for i, line in enumerate(track_info_lines):
+    for line in track_info_lines:
         k, v = key_value(line)
         if k.startswith("Track number"):
             number = int(v.split(" ")[0])
         elif k.startswith("Track UID"):
             uid = v
         elif k.startswith("Track type"):
-            track_type = v
+            track_type = TrackType(v)
         elif k.startswith("Language"):
             language = v
         elif k.startswith('"Default track" flag'):
             default_track = v == "1"
         elif k.startswith('"Forced display" flag'):
             forced_display = v == "1"
+        elif k.startswith('"Original language" flag'):
+            print(k, v)
+            original_language = v == "1"
 
-    return Trackinfo(number, uid, track_type, language, default_track, forced_display)
+    return Trackinfo(
+        number,
+        uid,
+        track_type,
+        language,
+        default_track,
+        forced_display,
+        original_language,
+    )
 
 
 def extract_track_info_lines(lines: str, start: int) -> list[str]:

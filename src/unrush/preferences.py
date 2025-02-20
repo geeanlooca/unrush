@@ -1,10 +1,11 @@
 import argparse
 import os
+import urllib.parse
 from pprint import pprint
+
+import requests
 import tracks_info
 from dotenv import load_dotenv
-import requests
-import urllib.parse
 
 load_dotenv()
 

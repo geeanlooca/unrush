@@ -1,13 +1,12 @@
 import argparse
+import dataclasses
+import json
+import os
 import subprocess
 from pprint import pprint
-from tracks_info import extract_tracks_information
-import tracks_editor
-import dataclasses
-import os
-import tqdm
-import json
 
+from unrush import tracks_editor
+from unrush.tracks_info import extract_tracks_information
 
 MKV_FILE = (
     r"/media/red1/Movies/Fallen Angels (1995)/Fallen Angels (1995) Bluray-1080p.mkv"
@@ -24,12 +23,21 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 
 
 def check_exec() -> bool:
-    ret1 = subprocess.call(
-        ["mkvpropedit", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
-    ret2 = subprocess.call(
-        ["mkvinfo", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
+    """Returns true if the executables for 'mkvpropedit' and 'mkvinfo' are found in PATH."""
+    try:
+        ret1 = subprocess.call(
+            ["mkvpropedit", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except FileNotFoundError:
+        return False
+
+    try:
+        ret2 = subprocess.call(
+            ["mkvinfo", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except FileNotFoundError:
+        return False
+
     return ret1 == 0 and ret2 == 0
 
 
@@ -62,26 +70,11 @@ def main() -> None:
         pprint(track_info)
 
         editor = tracks_editor.MkvTracksEditor(args.path, tracks_info=track_info)
+
         editor.set_audio_preferences(["eng", "spa"]).set_subtitle_preferences(
             ["eng", "spa"]
-        ).apply()
+        ).set_banned_languages(["rus", "ru"]).apply()
         raise SystemExit
-
-    mkv_files = get_mkv_files_in_path(args.path)
-    bar = tqdm.tqdm(mkv_files)
-    tracks = {}
-
-    for dir in bar:
-        bar.set_description(f"Processing {dir.name}")
-        tracks[dir.name] = extract_tracks_information(dir.path)
-        pprint(tracks[dir.name])
-
-        [
-            track for track in tracks[dir.name] if track.track_type == "subtitles"
-        ]
-        [
-            track for track in tracks[dir.name] if track.track_type == "audio"
-        ]
 
 
 if __name__ == "__main__":
