@@ -61,7 +61,8 @@ test = [
 "Source" = "https://github.com/geeanlooca/unrush/"
 
 [project.scripts]
-unrush = "unrush.main:main"
+unrush = "unrush.main:unrush"
+unrush-export-lang = "unrush.main:export_language_tags"
 
 
 [tool.setuptools]

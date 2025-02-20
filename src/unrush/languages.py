@@ -1,4 +1,6 @@
-from langcodes import find, standardize_tag
+from typing import Optional
+
+from langcodes import Language, find, standardize_tag
 from langcodes.tag_parser import LanguageTagError
 from loguru import logger
 
@@ -12,23 +14,36 @@ def get_language_code(language: str) -> str:
 
     try:
         lang_code = standardize_tag(language)
-        return lang_code
+        language_code = Language.get(lang_code).language
+
+        if language_code is None:
+            return language
+        return language_code
+
     except LanguageTagError as e:
         logger.warning(f"Could not parse {language} as tag: {e}")
 
     try:
         lang_code = find(language)
-        return lang_code.to_tag()
+        language_code = lang_code.language
+        if language_code is None:
+            return language
+        return language_code
+
     except LookupError as e:
         logger.error(f"Could not interpret {language} as language: {e}")
 
+    # from the tag, get the language
     logger.warning("Returning language code as is...")
 
     return language
 
 
-def normalize_language_list(languages: list[str]) -> list[str]:
+def normalize_language_list(languages: Optional[list[str]]) -> list[str]:
     """Transforms languages in language codes, preserving the specifying order."""
+
+    if languages is None:
+        return []
 
     seen_languages = set()
     ordered_list = []

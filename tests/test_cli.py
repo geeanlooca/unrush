@@ -11,7 +11,7 @@ def cli() -> ArgumentParser:
 
 
 def test_build_cli():
-    cli = build_cli()
+    _ = build_cli()
 
 
 def test_parse_cli_arguments(cli: ArgumentParser) -> None:

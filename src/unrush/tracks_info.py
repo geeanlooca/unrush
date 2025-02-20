@@ -91,7 +91,6 @@ def get_track_info(track_info_lines: list[str]) -> Trackinfo:
         elif k.startswith('"Forced display" flag'):
             forced_display = v == "1"
         elif k.startswith('"Original language" flag'):
-            print(k, v)
             original_language = v == "1"
 
     return Trackinfo(

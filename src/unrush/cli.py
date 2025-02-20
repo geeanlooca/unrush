@@ -51,4 +51,6 @@ def build_cli() -> ArgumentParser:
         required=False,
     )
 
+    parser.add_argument("--recursive", action="store_true", default=False)
+
     return parser

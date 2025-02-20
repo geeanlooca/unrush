@@ -5,6 +5,7 @@ from typing import Optional
 
 from loguru import logger
 
+from unrush.languages import ORIGINAL_LANGUAGE_KEYWORD, get_language_code
 from unrush.tracks_info import Trackinfo, TrackType, extract_tracks_information
 
 
@@ -69,7 +70,9 @@ class MkvTracksEditor:
         """Goes through the available tracks and selects the default track according to preferences."""
 
         tracks = [track for track in self.tracks if track.track_type == track_type]
-        available_languages = {track.language: track for track in tracks}
+        available_languages = {
+            get_language_code(track.language): track for track in tracks
+        }
 
         selected_track = None
 
@@ -89,8 +92,10 @@ class MkvTracksEditor:
         for preference in language_preferences:
             logger.info(f"Analyzing {preference=}")
 
+            lang_code = get_language_code(preference)
+
             # if we asked for the original language
-            if preference.casefold() in ("original", "orig"):
+            if lang_code == ORIGINAL_LANGUAGE_KEYWORD:
                 logger.info("Original language found in preferences...")
 
                 # first check if we have a track marked as default language
