@@ -67,7 +67,7 @@ class MkvTracksEditor:
     def _build_args(
         self, language_preferences: list[str], track_type: TrackType
     ) -> list[str]:
-        """Goes through the available tracks and selects the default track according to preferences."""
+        """Scans available tracks and selects the default according to preferences."""
 
         tracks = [track for track in self.tracks if track.track_type == track_type]
         available_languages = {
@@ -111,7 +111,8 @@ class MkvTracksEditor:
 
                     # for the moment, skip it
                     logger.warning(
-                        "Can't determine an original language track. Skipping preference..."
+                        "Can't determine an original language track. "
+                        + "Skipping preference..."
                     )
                     continue
 
@@ -145,7 +146,8 @@ class MkvTracksEditor:
         if first_acceptable_track is None:
             first_acceptable_track = tracks[0]
             logger.warning(
-                f"Could not find a non-banned language. Setting first track as default: {first_acceptable_track}"
+                "Could not find a non-banned language. "
+                + f"Setting first track as default: {first_acceptable_track}"
             )
 
         args = []

@@ -13,7 +13,9 @@ def parse_cli_arguments(
         and res.sub_preferences is None
     ):
         cli.error(
-            "At least one argument between --ban, --audio-preferences, and --sub-preferences must be specified"
+            "At least one argument between --ban,"
+            + " --audio-preferences, and --sub-preferences"
+            + " must be specified"
         )
 
     return res

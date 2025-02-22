@@ -15,7 +15,7 @@ def get_mkv_files_in_path(path: str) -> list[os.DirEntry]:
 
 
 def check_required_executables() -> bool:
-    """Returns true if the executables for 'mkvpropedit' and 'mkvinfo' are found in PATH."""
+    """Returns true if 'mkvpropedit' and 'mkvinfo' are found in PATH."""
     try:
         ret1 = subprocess.call(
             ["mkvpropedit", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
@@ -44,10 +44,7 @@ def find_all_mkv_files(paths: str | list[str], recursive: bool = False) -> list[
             filepaths.append(pathlib.Path(path))
         elif os.path.isdir(path):
             path = pathlib.Path(path)
-            if recursive:
-                files = path.rglob("*.mkv")
-            else:
-                files = path.glob("*.mkv")
+            files = path.rglob("*.mkv") if recursive else path.glob("*.mkv")
             filepaths.extend(list(files))
 
     return filepaths
