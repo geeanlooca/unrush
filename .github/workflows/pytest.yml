@@ -1,6 +1,10 @@
 name: Python testing using pytest
 
-on: [push]
+on: 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -8,9 +12,14 @@ permissions:
   checks: write
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: astral-sh/ruff-action@v3
+      - run: ruff check --fix
+      - run: ruff format
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup python
@@ -35,7 +44,6 @@ jobs:
           name: JEST Tests            # Name of the check run which will be created
           path: junit/test-results.xml
           reporter: java-junit        # Format of test results
-
 
 
 
