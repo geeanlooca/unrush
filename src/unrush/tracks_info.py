@@ -2,6 +2,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Optional
 
 
 class TrackType(StrEnum):
@@ -11,7 +12,7 @@ class TrackType(StrEnum):
 
 
 @dataclass
-class Trackinfo:
+class TrackInfo:
     number: int
     uid: str
     track_type: TrackType
@@ -22,30 +23,38 @@ class Trackinfo:
 
 
 @dataclass
-class MKVInfo:
-    title: str
-    tracks: list[Trackinfo]
+class MkvInfo:
+    tracks: list[TrackInfo]
+    title: Optional[str] = None
 
-    def audio_languages(self) -> list[str]:
-        return [track.language for track in self.tracks if track.track_type == "audio"]
+    def _exclude_non_audio_non_sub(
+        self, track_infos: list[TrackInfo]
+    ) -> list[TrackInfo]:
+        return list(
+            filter(
+                lambda t: t.track_type in (TrackType.AUDIO, TrackType.SUBTITLES),
+                track_infos,
+            )
+        )
 
-    def subtitle_languages(self) -> list[str]:
-        return [
-            track.language for track in self.tracks if track.track_type == "subtitles"
-        ]
+    def __post_init__(self) -> None:
+        self.tracks = self._exclude_non_audio_non_sub(self.tracks)
+
+    def audio_tracks(self) -> list[TrackInfo]:
+        return list(filter(lambda t: t.track_type == TrackType.AUDIO, self.tracks))
+
+    def subtitle_tracks(self) -> list[TrackInfo]:
+        return list(filter(lambda t: t.track_type == TrackType.SUBTITLES, self.tracks))
 
 
-def load_movies_json(file: str) -> list[MKVInfo]:
+def load_movies_json(file: str) -> list[MkvInfo]:
     with open(file) as f:
         data = json.load(f)
 
     movies = []
-
     for title, movie_tracks in data.items():
-        tracks = []
-        for track in movie_tracks:
-            tracks.append(Trackinfo(**track))
-        movie = MKVInfo(title, tracks)
+        tracks = [TrackInfo(**track) for track in movie_tracks]
+        movie = MkvInfo(title=title, tracks=tracks)
         movies.append(movie)
 
     return movies
@@ -55,7 +64,7 @@ def get_prefix_width(line: str, delim: str = "+") -> int:
     return len(line.split(delim)[0])
 
 
-def get_track_info(track_info_lines: list[str]) -> Trackinfo:
+def get_track_info(track_info_lines: list[str]) -> TrackInfo:
     def clean_line(line: str) -> str:
         return line.strip().split("+")[1].strip()
 
@@ -93,7 +102,7 @@ def get_track_info(track_info_lines: list[str]) -> Trackinfo:
         elif k.startswith('"Original language" flag'):
             original_language = v == "1"
 
-    return Trackinfo(
+    return TrackInfo(
         number,
         uid,
         track_type,
@@ -127,7 +136,7 @@ def extract_track_info_lines(lines: str, start: int) -> list[str]:
     return track_info
 
 
-def parse_tracks(mkv_info: str) -> list[Trackinfo]:
+def parse_tracks(mkv_info: str) -> list[TrackInfo]:
     lines = list(map(lambda s: s.rstrip(), mkv_info.split("|")))
 
     track_starts = []
@@ -146,7 +155,7 @@ def parse_tracks(mkv_info: str) -> list[Trackinfo]:
 
 def extract_tracks_information(
     mkv_file: str, print_full_output: bool = False
-) -> list[Trackinfo]:
+) -> list[TrackInfo]:
     out = subprocess.check_output(["mkvinfo", mkv_file]).decode("utf-8")
     if print_full_output:
         print(out)

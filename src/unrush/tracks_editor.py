@@ -1,29 +1,29 @@
 from __future__ import annotations
 
 import subprocess
-from typing import Optional
 
 from loguru import logger
 
 from unrush.languages import ORIGINAL_LANGUAGE_KEYWORD, get_language_code
-from unrush.tracks_info import Trackinfo, TrackType, extract_tracks_information
+from unrush.tracks_info import MkvInfo, TrackInfo, TrackType, extract_tracks_information
 
 
 class MkvTracksEditor:
     _exec_name = "mkvpropedit"
 
-    def __init__(
-        self, mkv_file: str, tracks_info: Optional[list[Trackinfo]] = None
-    ) -> None:
+    def __init__(self, mkv_file: str) -> None:
         self.mkv_file = mkv_file
         self._audio_preference = []
         self._subs_preference = []
         self._banned_languages = []
+        tracks = extract_tracks_information(self.mkv_file)
+        movie = MkvInfo(tracks=tracks)
 
-        if tracks_info:
-            self.tracks = tracks_info
-        else:
-            self.tracks = extract_tracks_information(mkv_file)
+        self.tracks: dict[TrackType, list[TrackInfo]] = []
+        self.tracks[TrackType.AUDIO] = movie.audio_tracks()
+        self.tracks[TrackType.SUBTITLES] = movie.subtitle_tracks()
+
+
 
     def set_banned_languages(self, language: str | list[str]) -> MkvTracksEditor:
         """Set the language(s) to disable for audio/subtitles tracks."""
@@ -49,7 +49,7 @@ class MkvTracksEditor:
             self._subs_preference.append(languages)
         return self
 
-    def _build_track_args(self, track: Trackinfo, default: bool) -> list[str]:
+    def _build_track_args(self, track: TrackInfo, default: bool) -> list[str]:
         args = []
         default_str = "1" if default else "0"
         args.append("--edit")
@@ -69,7 +69,8 @@ class MkvTracksEditor:
     ) -> list[str]:
         """Scans available tracks and selects the default according to preferences."""
 
-        tracks = [track for track in self.tracks if track.track_type == track_type]
+        tracks = self.tracks[track_type]
+
         available_languages = {
             get_language_code(track.language): track for track in tracks
         }
